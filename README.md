@@ -1,46 +1,34 @@
-# Astro Starter Kit: Basics
+# Game Engineering Portfolio
+
+Personal portfolio site built with Astro and deployed to GitHub Pages.
+
+## Commands
+
+Run commands from this project directory:
 
 ```sh
-npm create astro@latest -- --template basics
+npm install
+npm run dev
+npm run build
+npm run preview
 ```
 
-> 🧑‍🚀 **Seasoned astronaut?** Delete this file. Have fun!
-
-## 🚀 Project Structure
-
-Inside of your Astro project, you'll see the following folders and files:
+The production site is configured for:
 
 ```text
-/
-├── public/
-│   └── favicon.svg
-├── src
-│   ├── assets
-│   │   └── astro.svg
-│   ├── components
-│   │   └── Welcome.astro
-│   ├── layouts
-│   │   └── Layout.astro
-│   └── pages
-│       └── index.astro
-└── package.json
+https://TABRIS33.github.io/portfolio/
 ```
 
-To learn more about the folder structure of an Astro project, refer to [our guide on project structure](https://docs.astro.build/en/basics/project-structure/).
+## Editing Content
 
-## 🧞 Commands
+Portfolio copy, skills, focus areas, and project cards live in:
 
-All commands are run from the root of the project, from a terminal:
+```text
+src/data/portfolio.ts
+```
 
-| Command                   | Action                                           |
-| :------------------------ | :----------------------------------------------- |
-| `npm install`             | Installs dependencies                            |
-| `npm run dev`             | Starts local dev server at `localhost:4321`      |
-| `npm run build`           | Build your production site to `./dist/`          |
-| `npm run preview`         | Preview your build locally, before deploying     |
-| `npm run astro ...`       | Run CLI commands like `astro add`, `astro check` |
-| `npm run astro -- --help` | Get help using the Astro CLI                     |
+The main page layout lives in:
 
-## 👀 Want to learn more?
-
-Feel free to check [our documentation](https://docs.astro.build) or jump into our [Discord server](https://astro.build/chat).
+```text
+src/pages/index.astro
+```
