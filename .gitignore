@@ -12,6 +12,8 @@ yarn-error.log*
 pnpm-debug.log*
 .codex-dev.*.log
 .codex-dev.pid
+.codex-preview.*.log
+.codex-preview.pid
 
 # Environment files
 .env

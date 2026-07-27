@@ -1,57 +1,331 @@
 ---
-import { focusAreas, profile, projects, skills } from '../data/portfolio';
+import { heroStats, navItems, profile, projects, skillGroups, uiText } from '../data/portfolio';
 import Layout from '../layouts/Layout.astro';
+
+const basePath = import.meta.env.BASE_URL.endsWith('/')
+	? import.meta.env.BASE_URL
+	: `${import.meta.env.BASE_URL}/`;
+const fromBase = (path: string) => `${basePath}${path.replace(/^\/+/, '')}`;
+const asset = fromBase;
+const projectHref = (slug: string) => fromBase(`projects/${slug}/`);
+const textAttrs = (en: string, cn: string) => ({
+	'data-lang-en': en,
+	'data-lang-cn': cn,
+});
 ---
 
-<Layout title={`${profile.name} | ${profile.role}`} description={profile.intro}>
-	<main class="site-shell">
-		<section class="hero" aria-labelledby="intro-title">
-			<div class="hero-copy">
-				<p class="eyebrow">{profile.eyebrow}</p>
-				<h1 id="intro-title">{profile.headline}</h1>
-				<p class="intro">{profile.intro}</p>
-				<div class="actions" aria-label="Primary links">
-					<a class="button primary" href="#projects">View Projects</a>
-					<a class="button secondary" href={`mailto:${profile.email}`}>Contact</a>
+<Layout title={`${profile.name} | ${profile.role}`} description={profile.headlineCn}>
+	<header class="topbar" aria-label="Primary navigation">
+		<a class="brand-mark" href="#home" aria-label="Back to home">
+			<span>X</span>
+		</a>
+		<nav class="quick-jump" aria-label="Quick jump">
+			{
+				navItems.map((item, index) => (
+					<a href={item.href}>
+						<span>{String(index + 1).padStart(2, '0')}</span>
+						<b {...textAttrs(item.label, item.labelCn)}>{item.labelCn}</b>
+					</a>
+				))
+			}
+		</nav>
+		<div class="top-actions">
+			<button class="language-toggle" type="button" data-language-toggle>
+				<span data-language-current>{uiText.languageShortCn}</span>
+				<i aria-hidden="true">/</i>
+				<span data-language-target>{uiText.languageShortEn}</span>
+			</button>
+			<a class="resume-link" href={asset(profile.resumeUrl)} target="_blank" rel="noreferrer">
+				<span {...textAttrs(uiText.resume.en, uiText.resume.cn)}>{uiText.resume.cn}</span>
+			</a>
+		</div>
+	</header>
+
+	<main>
+		<section class="hero section-band" id="home" aria-labelledby="hero-title">
+			<div class="hero-grid">
+				<div class="hero-copy">
+					<p class="eyebrow" {...textAttrs(profile.role, profile.roleCn)}>{profile.roleCn}</p>
+					<h1 id="hero-title">
+						<span {...textAttrs(profile.name, profile.nameCn)}>{profile.nameCn}</span>
+						<small {...textAttrs(profile.nameCn, profile.name)}>{profile.name}</small>
+					</h1>
+					<p class="hero-subtitle" {...textAttrs(profile.headline, profile.headlineCn)}>
+						{profile.headlineCn}
+					</p>
+					<p class="hero-intro" {...textAttrs(profile.intro, profile.introCn)}>{profile.introCn}</p>
+					<div class="hero-actions" aria-label="Primary actions">
+						<a class="button primary" href="#projects">
+							<span {...textAttrs(uiText.viewProjects.en, uiText.viewProjects.cn)}>
+								{uiText.viewProjects.cn}
+							</span>
+						</a>
+						<a class="button secondary" href={profile.github} target="_blank" rel="noreferrer">
+							GitHub
+						</a>
+						<a class="button ghost" href={`mailto:${profile.email}`}>
+							<span {...textAttrs(uiText.contact.en, uiText.contact.cn)}>{uiText.contact.cn}</span>
+						</a>
+					</div>
+				</div>
+
+				<div class="hero-stage" data-project-rotator aria-label="Rotating project highlights">
+					<div class="project-rotator">
+						{
+							projects.map((project, index) => (
+								<a
+									class={`hero-slide ${project.visual}${index === 0 ? ' is-active' : ''}`}
+									href={projectHref(project.slug)}
+									data-project-slide
+								>
+									<div class="slide-media">
+										{project.image ? (
+											<img src={asset(project.image)} alt={`${project.title} project preview`} />
+										) : (
+											<div class={`visual-placeholder ${project.visual}`} aria-hidden="true">
+												<span>{project.id}</span>
+											</div>
+										)}
+									</div>
+									<div class="slide-copy">
+										<div class="slide-heading">
+											<span>{project.id}</span>
+											<h2 {...textAttrs(project.title, project.titleCn)}>{project.titleCn}</h2>
+										</div>
+										<p {...textAttrs(project.subtitle, project.subtitleCn)}>{project.subtitleCn}</p>
+										<div class="tag-list">
+											{project.tags.slice(0, 4).map((tag) => <span>{tag}</span>)}
+										</div>
+										<strong {...textAttrs(uiText.viewDetails.en, uiText.viewDetails.cn)}>
+											{uiText.viewDetails.cn}
+										</strong>
+									</div>
+								</a>
+							))
+						}
+					</div>
+					<div class="rotator-controls" aria-label="Project carousel controls">
+						{
+							projects.map((project, index) => (
+								<button
+									type="button"
+									class={index === 0 ? 'rotator-dot is-active' : 'rotator-dot'}
+									data-project-dot={index}
+									aria-label={`Show ${project.title}`}
+									aria-current={index === 0 ? 'true' : 'false'}
+								></button>
+							))
+						}
+					</div>
 				</div>
 			</div>
-			<div class="status-panel" aria-label="Portfolio summary">
-				<p class="panel-label">Focus Areas</p>
-				<ul>
-					{focusAreas.map((area) => <li>{area}</li>)}
-				</ul>
+
+			<div class="hero-status" aria-label="Portfolio status summary">
+				{
+					heroStats.map((stat) => (
+						<div class="status-item">
+							<span {...textAttrs(stat.label, stat.labelCn)}>{stat.labelCn}</span>
+							<strong {...textAttrs(stat.value, stat.valueCn)}>{stat.valueCn}</strong>
+						</div>
+					))
+				}
 			</div>
 		</section>
 
-		<section class="section" aria-labelledby="skills-title">
+		<section class="section-band projects-section" id="projects" aria-labelledby="projects-title">
 			<div class="section-heading">
-				<p class="eyebrow">Technical Stack</p>
-				<h2 id="skills-title">Skills to make obvious early</h2>
+				<p class="eyebrow" {...textAttrs(uiText.selectedProjects.en, uiText.selectedProjects.cn)}>
+					{uiText.selectedProjects.cn}
+				</p>
+				<h2 id="projects-title" {...textAttrs(uiText.selectedProjectsTitle.en, uiText.selectedProjectsTitle.cn)}>
+					{uiText.selectedProjectsTitle.cn}
+				</h2>
+				<p {...textAttrs(uiText.selectedProjectsBody.en, uiText.selectedProjectsBody.cn)}>
+					{uiText.selectedProjectsBody.cn}
+				</p>
 			</div>
-			<ul class="skill-list" aria-label="Skills">
-				{skills.map((skill) => <li>{skill}</li>)}
-			</ul>
-		</section>
 
-		<section class="section" id="projects" aria-labelledby="projects-title">
-			<div class="section-heading">
-				<p class="eyebrow">Selected Work</p>
-				<h2 id="projects-title">Projects reviewers can understand quickly</h2>
-			</div>
 			<div class="project-grid">
 				{
 					projects.map((project) => (
-						<article class="project-card">
-							<p class="project-type">{project.type}</p>
-							<h3>{project.title}</h3>
-							<p>{project.description}</p>
-							<p class="impact">{project.impact}</p>
+						<a class={`project-card ${project.visual}`} href={projectHref(project.slug)}>
+							<div class="project-media">
+								{project.previewGif || project.image ? (
+									<img
+										src={asset(project.previewGif || project.image)}
+										alt={`${project.title} project preview`}
+										loading="lazy"
+									/>
+								) : (
+									<div class={`visual-placeholder ${project.visual}`} aria-hidden="true">
+										<span>{project.id}</span>
+									</div>
+								)}
+								<div class="project-number">Project {project.id}</div>
+							</div>
+
+							<div class="project-content">
+								<div class="project-title-row">
+									<div>
+										<p class="project-type" {...textAttrs(project.type, project.typeCn)}>
+											{project.typeCn}
+										</p>
+										<h3 {...textAttrs(project.title, project.titleCn)}>{project.titleCn}</h3>
+									</div>
+									<span class="role-chip" {...textAttrs(project.role, project.roleCn)}>
+										{project.roleCn}
+									</span>
+								</div>
+								<p class="project-subtitle" {...textAttrs(project.subtitle, project.subtitleCn)}>
+									{project.subtitleCn}
+								</p>
+								<p class="project-summary" {...textAttrs(project.summary, project.summaryCn)}>
+									{project.summaryCn}
+								</p>
+
+								<div class="tag-list" aria-label={`${project.title} technologies`}>
+									{project.tags.map((tag) => <span>{tag}</span>)}
+								</div>
+
+								<div class="metric-grid">
+									{
+										project.metrics.map((metric) => (
+											<div>
+												<span {...textAttrs(metric.label, metric.labelCn)}>{metric.labelCn}</span>
+												<strong {...textAttrs(metric.value, metric.valueCn)}>{metric.valueCn}</strong>
+											</div>
+										))
+									}
+								</div>
+
+								<ul class="highlight-list">
+									{project.highlights.map((highlight) => (
+										<li {...textAttrs(highlight.en, highlight.cn)}>{highlight.cn}</li>
+									))}
+								</ul>
+							</div>
+						</a>
+					))
+				}
+			</div>
+		</section>
+
+		<section class="section-band tech-section" id="tech-stack" aria-labelledby="tech-title">
+			<div class="section-heading compact">
+				<p class="eyebrow" {...textAttrs(uiText.techStack.en, uiText.techStack.cn)}>{uiText.techStack.cn}</p>
+				<h2 id="tech-title" {...textAttrs(uiText.techTitle.en, uiText.techTitle.cn)}>{uiText.techTitle.cn}</h2>
+			</div>
+
+			<div class="skill-grid">
+				{
+					skillGroups.map((group) => (
+						<article class="skill-card">
+							<p>{group.code}</p>
+							<h3 {...textAttrs(group.title, group.titleCn)}>{group.titleCn}</h3>
+							<div class="tag-list">
+								{group.items.map((item) => <span>{item}</span>)}
+							</div>
 						</article>
 					))
 				}
 			</div>
 		</section>
+
+		<section class="section-band about-section" id="about" aria-labelledby="about-title">
+			<div class="about-card">
+				<div>
+					<p class="eyebrow" {...textAttrs(uiText.about.en, uiText.about.cn)}>{uiText.about.cn}</p>
+					<h2 id="about-title" {...textAttrs(uiText.aboutTitle.en, uiText.aboutTitle.cn)}>
+						{uiText.aboutTitle.cn}
+					</h2>
+				</div>
+				<p {...textAttrs(uiText.aboutBody.en, uiText.aboutBody.cn)}>{uiText.aboutBody.cn}</p>
+			</div>
+		</section>
+
+		<section class="section-band contact-section" id="contact" aria-labelledby="contact-title">
+			<div class="contact-panel">
+				<div>
+					<p class="eyebrow" {...textAttrs(uiText.contact.en, uiText.contact.cn)}>{uiText.contact.cn}</p>
+					<h2 id="contact-title" {...textAttrs(uiText.contactTitle.en, uiText.contactTitle.cn)}>
+						{uiText.contactTitle.cn}
+					</h2>
+					<p {...textAttrs(uiText.contactBody.en, uiText.contactBody.cn)}>{uiText.contactBody.cn}</p>
+				</div>
+				<div class="contact-actions">
+					<a class="button primary" href={`mailto:${profile.email}`}>Email</a>
+					<a class="button secondary" href={profile.github} target="_blank" rel="noreferrer">
+						GitHub
+					</a>
+					<a class="button ghost" href={asset(profile.resumeUrl)} target="_blank" rel="noreferrer">
+						<span {...textAttrs(uiText.resume.en, uiText.resume.cn)}>{uiText.resume.cn}</span>
+					</a>
+				</div>
+			</div>
+		</section>
 	</main>
+
+	<script>
+		const rotator = document.querySelector('[data-project-rotator]');
+
+		if (rotator) {
+			const slides = Array.from(rotator.querySelectorAll('[data-project-slide]'));
+			const dots = Array.from(rotator.querySelectorAll('[data-project-dot]'));
+			const controls = rotator.querySelector('.rotator-controls');
+			let activeIndex = 0;
+			let isPaused = false;
+			let timerId;
+
+			const showSlide = (index) => {
+				activeIndex = (index + slides.length) % slides.length;
+
+				slides.forEach((slide, slideIndex) => {
+					slide.classList.toggle('is-active', slideIndex === activeIndex);
+				});
+
+				dots.forEach((dot, dotIndex) => {
+					const isActive = dotIndex === activeIndex;
+					dot.classList.toggle('is-active', isActive);
+					dot.setAttribute('aria-current', isActive ? 'true' : 'false');
+				});
+			};
+
+			const startTimer = () => {
+				window.clearInterval(timerId);
+				timerId = window.setInterval(() => {
+					if (!isPaused) {
+						showSlide(activeIndex + 1);
+					}
+				}, 6500);
+			};
+
+			dots.forEach((dot, index) => {
+				dot.addEventListener('click', () => {
+					showSlide(index);
+					startTimer();
+				});
+			});
+
+			controls?.addEventListener('mouseenter', () => {
+				isPaused = true;
+			});
+
+			controls?.addEventListener('mouseleave', () => {
+				isPaused = false;
+			});
+
+			controls?.addEventListener('focusin', () => {
+				isPaused = true;
+			});
+
+			controls?.addEventListener('focusout', () => {
+				isPaused = false;
+			});
+
+			showSlide(0);
+			startTimer();
+		}
+	</script>
 </Layout>
 
 <style>
@@ -59,35 +333,193 @@ import Layout from '../layouts/Layout.astro';
 		box-sizing: border-box;
 	}
 
-	:global(body) {
-		background: #f6f7f4;
-		color: #1c211f;
-		font-family:
-			Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+	:global(html) {
+		scroll-behavior: smooth;
 	}
 
-	.site-shell {
-		width: min(1120px, calc(100% - 40px));
+	:global(body) {
+		min-width: 320px;
+		background:
+			linear-gradient(rgba(24, 166, 200, 0.026) 1px, transparent 1px),
+			linear-gradient(90deg, rgba(24, 166, 200, 0.024) 1px, transparent 1px),
+			linear-gradient(180deg, #f8fcfd 0%, #f1f8f9 46%, #f8fbf7 100%);
+		background-size:
+			44px 44px,
+			44px 44px,
+			100% 100%;
+		color: #17323a;
+		font-family:
+			Inter, "Noto Sans SC", "Microsoft YaHei", "PingFang SC", system-ui, -apple-system,
+			BlinkMacSystemFont, "Segoe UI", sans-serif;
+	}
+
+	:global(a) {
+		color: inherit;
+	}
+
+	.topbar {
+		position: sticky;
+		top: 0;
+		z-index: 20;
+		display: grid;
+		grid-template-columns: auto minmax(0, 1fr) auto;
+		align-items: center;
+		gap: 18px;
+		width: min(1440px, calc(100% - 32px));
+		margin: 16px auto 0;
+		padding: 10px;
+		border: 1px solid rgba(15, 96, 120, 0.18);
+		border-radius: 8px;
+		background: rgba(255, 255, 255, 0.84);
+		box-shadow: 0 12px 36px rgba(14, 76, 94, 0.08);
+		backdrop-filter: blur(18px);
+	}
+
+	.brand-mark,
+	.resume-link,
+	.language-toggle,
+	.quick-jump a,
+	.button {
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 42px;
+		border-radius: 6px;
+		text-decoration: none;
+		font-weight: 800;
+	}
+
+	.brand-mark {
+		width: 46px;
+		border: 1px solid rgba(24, 166, 200, 0.32);
+		background: #e7f8fb;
+		color: #0f6078;
+		font-size: 1.35rem;
+	}
+
+	.brand-mark span {
+		transform: skew(-10deg);
+	}
+
+	.quick-jump {
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		gap: 6px;
+		overflow-x: auto;
+		scrollbar-width: none;
+	}
+
+	.quick-jump::-webkit-scrollbar {
+		display: none;
+	}
+
+	.quick-jump a {
+		gap: 8px;
+		padding: 0 12px;
+		color: #284852;
+		white-space: nowrap;
+	}
+
+	.quick-jump b {
+		font: inherit;
+	}
+
+	.quick-jump a:hover,
+	.quick-jump a:focus-visible,
+	.language-toggle:hover,
+	.language-toggle:focus-visible {
+		background: #e7f8fb;
+		color: #0f6078;
+		outline: none;
+	}
+
+	.quick-jump span {
+		color: #18a6c8;
+		font-family: "Cascadia Code", Consolas, monospace;
+		font-size: 0.72rem;
+	}
+
+	.top-actions {
+		display: flex;
+		align-items: center;
+		gap: 8px;
+	}
+
+	.language-toggle {
+		gap: 5px;
+		padding: 0 13px;
+		border: 1px solid rgba(15, 96, 120, 0.18);
+		background: rgba(255, 255, 255, 0.74);
+		color: #0f6078;
+		cursor: pointer;
+		font-family: inherit;
+	}
+
+	.language-toggle i {
+		color: #8aaab3;
+		font-style: normal;
+	}
+
+	.resume-link {
+		padding: 0 18px;
+		background: #0f6078;
+		color: #fff;
+		box-shadow: 0 10px 22px rgba(15, 96, 120, 0.16);
+		text-transform: uppercase;
+	}
+
+	main {
+		overflow: hidden;
+	}
+
+	.section-band {
+		width: min(1440px, calc(100% - 32px));
 		margin: 0 auto;
-		padding: 32px 0 56px;
 	}
 
 	.hero {
-		min-height: 76vh;
+		position: relative;
+		padding: 64px 0 54px;
+	}
+
+	.hero::before {
+		position: absolute;
+		inset: -160px -24px auto;
+		height: 520px;
+		background:
+			radial-gradient(circle at 72% 22%, rgba(24, 166, 200, 0.22), transparent 34%),
+			radial-gradient(circle at 12% 18%, rgba(242, 193, 78, 0.14), transparent 32%);
+		content: "";
+		pointer-events: none;
+	}
+
+	.hero-grid {
+		position: relative;
 		display: grid;
-		grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
+		grid-template-columns: minmax(0, 0.82fr) minmax(460px, 1.18fr);
 		align-items: center;
-		gap: 32px;
+		gap: 36px;
+		min-height: 590px;
+	}
+
+	.hero-copy {
+		position: relative;
+		z-index: 2;
+		max-width: 620px;
 	}
 
 	.eyebrow,
-	.panel-label,
-	.project-type {
+	.panel-kicker,
+	.project-type,
+	.skill-card p,
+	.status-item span,
+	.metric-grid span {
 		margin: 0;
-		color: #47665a;
+		color: #0f7d99;
+		font-family: "Cascadia Code", Consolas, monospace;
 		font-size: 0.78rem;
 		font-weight: 800;
-		letter-spacing: 0.08em;
 		text-transform: uppercase;
 	}
 
@@ -99,33 +531,65 @@ import Layout from '../layouts/Layout.astro';
 	}
 
 	h1 {
-		max-width: 860px;
-		margin-bottom: 20px;
-		font-size: clamp(2.7rem, 8vw, 6rem);
-		line-height: 0.96;
+		display: grid;
+		gap: 10px;
+		margin-bottom: 18px;
+		color: #0d2530;
+		font-size: clamp(4.25rem, 8.8vw, 7.8rem);
+		line-height: 0.92;
 		letter-spacing: 0;
 	}
 
-	h2 {
-		margin-bottom: 0;
-		font-size: clamp(1.8rem, 4vw, 3.2rem);
+	h1 small {
+		color: #0f6078;
+		font-size: clamp(1.1rem, 2vw, 1.8rem);
 		line-height: 1;
+	}
+
+	:global(html[data-language="en"]) h1 {
+		font-size: clamp(3rem, 5.8vw, 5.5rem);
+		line-height: 0.94;
+		text-transform: uppercase;
+	}
+
+	:global(html[data-language="en"]) h1 small {
+		text-transform: none;
+	}
+
+	h2 {
+		color: #0d2530;
+		font-size: clamp(2rem, 4vw, 3.6rem);
+		line-height: 0.98;
 		letter-spacing: 0;
 	}
 
 	h3 {
-		margin-bottom: 12px;
-		font-size: 1.25rem;
+		color: #0d2530;
+		font-size: 1.45rem;
+		line-height: 1.05;
+		letter-spacing: 0;
 	}
 
-	.intro {
-		max-width: 680px;
-		color: #4c5551;
-		font-size: 1.1rem;
-		line-height: 1.7;
+	.hero-subtitle {
+		margin-bottom: 18px;
+		color: #0f6078;
+		font-size: clamp(1.2rem, 2.2vw, 1.65rem);
+		font-weight: 800;
+		line-height: 1.24;
 	}
 
-	.actions {
+	.hero-intro,
+	.section-heading p,
+	.project-summary,
+	.about-card p,
+	.contact-panel p {
+		color: #52717a;
+		font-size: 1rem;
+		line-height: 1.72;
+	}
+
+	.hero-actions,
+	.contact-actions {
 		display: flex;
 		flex-wrap: wrap;
 		gap: 12px;
@@ -133,110 +597,665 @@ import Layout from '../layouts/Layout.astro';
 	}
 
 	.button {
-		display: inline-flex;
-		align-items: center;
-		justify-content: center;
-		min-height: 44px;
+		min-width: 132px;
 		padding: 0 18px;
-		border: 1px solid #1c211f;
-		border-radius: 6px;
-		font-weight: 800;
-		text-decoration: none;
+		border: 1px solid rgba(15, 96, 120, 0.28);
+		transition:
+			transform 180ms ease,
+			border-color 180ms ease,
+			background 180ms ease,
+			color 180ms ease;
 	}
 
-	.primary {
-		background: #1c211f;
+	.button:hover,
+	.button:focus-visible {
+		transform: translateY(-2px);
+		outline: none;
+	}
+
+	.button.primary {
+		background: #0f6078;
 		color: #fff;
+		box-shadow: 0 12px 24px rgba(15, 96, 120, 0.18);
 	}
 
-	.secondary {
-		background: transparent;
-		color: #1c211f;
+	.button.secondary {
+		background: rgba(255, 255, 255, 0.82);
+		color: #0f6078;
 	}
 
-	.status-panel,
-	.project-card {
-		border: 1px solid #d8ddd6;
+	.button.ghost {
+		background: #fff6e8;
+		color: #8d5515;
+		border-color: rgba(244, 162, 97, 0.46);
+	}
+
+	.hero-stage {
+		position: relative;
+		min-height: 500px;
+		overflow: hidden;
+		border: 1px solid rgba(24, 166, 200, 0.2);
 		border-radius: 8px;
-		background: #ffffff;
-		box-shadow: 0 18px 50px rgba(28, 33, 31, 0.08);
+		background: #edf8fa;
+		box-shadow: 0 22px 58px rgba(14, 76, 94, 0.12);
 	}
 
-	.status-panel {
-		padding: 24px;
+	.project-rotator {
+		position: absolute;
+		inset: 0;
 	}
 
-	.status-panel ul {
+	.hero-slide {
+		position: absolute;
+		inset: 0;
+		display: block;
+		color: inherit;
+		text-decoration: none;
+		opacity: 0;
+		transform: translateX(18px);
+		pointer-events: none;
+		transition:
+			opacity 420ms ease,
+			transform 420ms ease;
+	}
+
+	.hero-slide.is-active {
+		opacity: 1;
+		transform: translateX(0);
+		pointer-events: auto;
+	}
+
+	.hero-slide:hover .slide-media > img {
+		transform: scale(1.035);
+	}
+
+	.slide-media {
+		position: absolute;
+		inset: 0;
+		overflow: hidden;
+		background: #dff3f7;
+	}
+
+	.slide-media > img,
+	.slide-media .visual-placeholder {
+		display: block;
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		transition: transform 420ms ease;
+	}
+
+	.slide-media > img {
+		filter: saturate(1.04) contrast(0.96);
+	}
+
+	.slide-media::after {
+		position: absolute;
+		inset: 0;
+		background:
+			linear-gradient(90deg, rgba(8, 33, 43, 0.5) 0%, rgba(8, 33, 43, 0.16) 42%, rgba(255, 255, 255, 0.02) 100%),
+			linear-gradient(180deg, rgba(255, 255, 255, 0.04), rgba(10, 76, 95, 0.26));
+		content: "";
+		pointer-events: none;
+	}
+
+	.slide-copy {
+		position: absolute;
+		left: 24px;
+		bottom: 58px;
+		z-index: 4;
+		width: min(500px, calc(100% - 48px));
 		display: grid;
-		gap: 14px;
-		margin: 18px 0 0;
-		padding-left: 20px;
-		color: #35413c;
-		line-height: 1.6;
+		gap: 12px;
+		padding: 16px 18px;
+		border: 1px solid rgba(255, 255, 255, 0.24);
+		border-left: 4px solid #62d7ef;
+		border-radius: 8px;
+		background: linear-gradient(
+			90deg,
+			rgba(6, 35, 46, 0.52) 0%,
+			rgba(6, 35, 46, 0.28) 72%,
+			rgba(6, 35, 46, 0.06) 100%
+		);
+		box-shadow: 0 14px 34px rgba(8, 33, 43, 0.18);
+		backdrop-filter: blur(4px);
 	}
 
-	.section {
-		padding: 64px 0 0;
+	.slide-heading {
+		display: flex;
+		gap: 14px;
+		align-items: baseline;
+	}
+
+	.slide-heading span {
+		color: #7ee6ff;
+		font-family: "Cascadia Code", Consolas, monospace;
+		font-size: 0.98rem;
+		font-weight: 900;
+		text-shadow: 0 2px 8px rgba(0, 0, 0, 0.42);
+	}
+
+	.slide-heading h2 {
+		margin: 0;
+		color: #fff;
+		font-size: clamp(1.8rem, 3.5vw, 3.1rem);
+		text-shadow: 0 3px 14px rgba(0, 0, 0, 0.48);
+	}
+
+	.slide-copy p {
+		margin: 0;
+		color: #eafaff;
+		line-height: 1.55;
+		text-shadow: 0 2px 9px rgba(0, 0, 0, 0.42);
+	}
+
+	.slide-copy strong {
+		justify-self: start;
+		color: #fff;
+		font-size: 0.9rem;
+		text-shadow: 0 2px 9px rgba(0, 0, 0, 0.45);
+		text-transform: uppercase;
+	}
+
+	.slide-copy .tag-list span {
+		border-color: rgba(255, 255, 255, 0.26);
+		background: rgba(255, 255, 255, 0.16);
+		color: #fff;
+		text-shadow: 0 2px 8px rgba(0, 0, 0, 0.36);
+	}
+
+	.rotator-controls {
+		position: absolute;
+		left: 50%;
+		bottom: 18px;
+		z-index: 8;
+		display: inline-flex;
+		gap: 9px;
+		align-items: center;
+		padding: 7px 10px;
+		border: 1px solid rgba(15, 96, 120, 0.12);
+		border-radius: 999px;
+		background: rgba(255, 255, 255, 0.78);
+		box-shadow: 0 8px 22px rgba(14, 76, 94, 0.16);
+		backdrop-filter: blur(12px);
+		transform: translateX(-50%);
+	}
+
+	.rotator-dot {
+		width: 10px;
+		height: 10px;
+		padding: 0;
+		border: 1px solid rgba(15, 96, 120, 0.28);
+		border-radius: 50%;
+		background: rgba(255, 255, 255, 0.88);
+		cursor: pointer;
+		transition:
+			width 180ms ease,
+			background 180ms ease,
+			border-color 180ms ease;
+	}
+
+	.rotator-dot:hover,
+	.rotator-dot:focus-visible,
+	.rotator-dot.is-active {
+		width: 24px;
+		border-color: #0f6078;
+		border-radius: 999px;
+		background: #0f6078;
+		outline: none;
+	}
+
+	.project-card,
+	.skill-card,
+	.about-card,
+	.contact-panel,
+	.status-item {
+		border: 1px solid rgba(15, 96, 120, 0.16);
+		border-radius: 8px;
+		background: rgba(255, 255, 255, 0.84);
+		box-shadow: 0 20px 55px rgba(14, 76, 94, 0.12);
+		backdrop-filter: blur(16px);
+	}
+
+	.hero-status {
+		position: relative;
+		z-index: 3;
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 14px;
+		margin-top: 18px;
+	}
+
+	.status-item {
+		padding: 18px;
+	}
+
+	.status-item strong {
+		display: block;
+		margin-top: 6px;
+		color: #0d2530;
+		font-size: 1.05rem;
+	}
+
+	.projects-section,
+	.tech-section,
+	.about-section,
+	.contact-section {
+		padding: 76px 0 0;
 	}
 
 	.section-heading {
 		display: grid;
-		gap: 12px;
-		margin-bottom: 24px;
+		grid-template-columns: minmax(0, 0.9fr) minmax(280px, 0.55fr);
+		align-items: end;
+		gap: 28px;
+		margin-bottom: 26px;
 	}
 
-	.skill-list {
-		display: flex;
-		flex-wrap: wrap;
-		gap: 10px;
-		margin: 0;
-		padding: 0;
-		list-style: none;
+	.section-heading.compact {
+		display: block;
 	}
 
-	.skill-list li {
-		padding: 9px 12px;
-		border: 1px solid #cfd7d1;
-		border-radius: 999px;
-		background: #eef2ec;
-		color: #27312d;
-		font-weight: 700;
+	.section-heading h2 {
+		margin-bottom: 0;
 	}
 
 	.project-grid {
 		display: grid;
-		grid-template-columns: repeat(3, minmax(0, 1fr));
-		gap: 16px;
+		grid-template-columns: repeat(2, minmax(0, 1fr));
+		gap: 18px;
 	}
 
 	.project-card {
+		display: block;
+		overflow: hidden;
+		color: inherit;
+		text-decoration: none;
+		transition:
+			transform 180ms ease,
+			border-color 180ms ease,
+			box-shadow 180ms ease;
+	}
+
+	.project-card:hover,
+	.project-card:focus-visible {
+		transform: translateY(-4px);
+		border-color: rgba(24, 166, 200, 0.44);
+		box-shadow: 0 28px 70px rgba(14, 76, 94, 0.16);
+		outline: none;
+	}
+
+	.project-media {
+		position: relative;
+		aspect-ratio: 16 / 9;
+		overflow: hidden;
+		background: #dff3f7;
+	}
+
+	.project-media img {
+		width: 100%;
+		height: 100%;
+		object-fit: cover;
+		display: block;
+		transition: transform 220ms ease;
+	}
+
+	.project-card:hover .project-media img {
+		transform: scale(1.035);
+	}
+
+	.project-media::after {
+		position: absolute;
+		inset: 0;
+		background:
+			linear-gradient(180deg, rgba(13, 37, 48, 0.02), rgba(13, 37, 48, 0.32)),
+			linear-gradient(90deg, rgba(255, 255, 255, 0.18), transparent 42%);
+		content: "";
+	}
+
+	.project-number {
+		position: absolute;
+		left: 16px;
+		top: 16px;
+		z-index: 2;
+		padding: 8px 10px;
+		border: 1px solid rgba(255, 255, 255, 0.72);
+		border-radius: 6px;
+		background: rgba(15, 96, 120, 0.78);
+		color: #fff;
+		font-family: "Cascadia Code", Consolas, monospace;
+		font-size: 0.78rem;
+		font-weight: 800;
+		text-transform: uppercase;
+	}
+
+	.visual-placeholder {
+		position: relative;
+		height: 100%;
+		min-height: 260px;
+		overflow: hidden;
+	}
+
+	.visual-placeholder span {
+		position: absolute;
+		right: 22px;
+		bottom: 16px;
+		z-index: 3;
+		color: rgba(255, 255, 255, 0.84);
+		font-family: "Cascadia Code", Consolas, monospace;
+		font-size: 4rem;
+		font-weight: 900;
+	}
+
+	.visual-placeholder::before,
+	.visual-placeholder::after {
+		position: absolute;
+		inset: 0;
+		content: "";
+	}
+
+	.visual-placeholder.tank {
+		background:
+			radial-gradient(circle at 66% 42%, rgba(244, 162, 97, 0.52), transparent 10%),
+			linear-gradient(145deg, #9fbf80, #567c69 46%, #3e5360);
+	}
+
+	.visual-placeholder.tank::before {
+		background:
+			linear-gradient(rgba(255, 255, 255, 0.26) 1px, transparent 1px),
+			linear-gradient(90deg, rgba(255, 255, 255, 0.18) 1px, transparent 1px);
+		background-size: 42px 42px;
+		clip-path: polygon(0 72%, 24% 55%, 46% 68%, 68% 45%, 100% 58%, 100% 100%, 0 100%);
+	}
+
+	.visual-placeholder.tank::after {
+		background:
+			linear-gradient(90deg, transparent 22%, rgba(13, 37, 48, 0.5) 22% 27%, transparent 27%),
+			linear-gradient(175deg, transparent 48%, rgba(13, 37, 48, 0.74) 49% 58%, transparent 59%);
+	}
+
+	.visual-placeholder.renderer {
+		background:
+			radial-gradient(circle at 24% 38%, rgba(255, 255, 255, 0.9), transparent 9%),
+			radial-gradient(circle at 64% 42%, rgba(244, 162, 97, 0.76), transparent 12%),
+			linear-gradient(135deg, #f4f7f1, #c6d3d3 48%, #6f858b);
+	}
+
+	.visual-placeholder.renderer::before {
+		background:
+			linear-gradient(90deg, transparent 18%, rgba(13, 37, 48, 0.28) 18% 19%, transparent 19% 36%, rgba(13, 37, 48, 0.22) 36% 37%, transparent 37%),
+			linear-gradient(0deg, rgba(255, 255, 255, 0.7) 0 18%, transparent 18%);
+	}
+
+	.visual-placeholder.renderer::after {
+		inset: 28px;
+		border: 1px solid rgba(15, 96, 120, 0.24);
+		background: linear-gradient(115deg, transparent 52%, rgba(15, 96, 120, 0.16) 52% 53%, transparent 53%);
+	}
+
+	.visual-placeholder.dx12 {
+		background: linear-gradient(150deg, #dff7fb, #8fd7e7 44%, #264b59);
+	}
+
+	.visual-placeholder.dx12::before {
+		background:
+			linear-gradient(rgba(255, 255, 255, 0.44) 1px, transparent 1px),
+			linear-gradient(90deg, rgba(255, 255, 255, 0.34) 1px, transparent 1px);
+		background-size: 32px 32px;
+		transform: perspective(280px) rotateX(58deg) translateY(70px) scale(1.22);
+		transform-origin: bottom;
+	}
+
+	.visual-placeholder.dx12::after {
+		background:
+			linear-gradient(115deg, transparent 18%, rgba(255, 255, 255, 0.62) 18% 19%, transparent 19%),
+			linear-gradient(155deg, transparent 48%, rgba(242, 193, 78, 0.58) 48% 49%, transparent 49%);
+	}
+
+	.project-content {
 		padding: 22px;
 	}
 
-	.project-card p {
-		color: #4c5551;
-		line-height: 1.6;
+	.project-title-row {
+		display: grid;
+		grid-template-columns: minmax(0, 1fr) auto;
+		gap: 14px;
+		align-items: start;
+		margin-bottom: 10px;
 	}
 
-	.project-card .impact {
+	.project-title-row h3 {
 		margin-bottom: 0;
-		color: #24312c;
-		font-weight: 700;
 	}
 
-	@media (max-width: 860px) {
-		.site-shell {
-			width: min(100% - 28px, 720px);
-		}
+	.role-chip {
+		max-width: 260px;
+		padding: 7px 10px;
+		border: 1px solid rgba(89, 169, 106, 0.26);
+		border-radius: 6px;
+		background: #f0faef;
+		color: #3b7747;
+		font-size: 0.78rem;
+		font-weight: 800;
+		line-height: 1.35;
+	}
 
-		.hero,
-		.project-grid {
+	.project-subtitle {
+		margin-bottom: 10px;
+		color: #0f6078;
+		font-weight: 800;
+	}
+
+	.tag-list {
+		display: flex;
+		flex-wrap: wrap;
+		gap: 8px;
+	}
+
+	.tag-list span {
+		padding: 7px 9px;
+		border: 1px solid rgba(15, 96, 120, 0.16);
+		border-radius: 5px;
+		background: #edf8fa;
+		color: #254b55;
+		font-family: "Cascadia Code", Consolas, monospace;
+		font-size: 0.78rem;
+		font-weight: 800;
+	}
+
+	.metric-grid {
+		display: grid;
+		grid-template-columns: repeat(3, minmax(0, 1fr));
+		gap: 8px;
+		margin: 16px 0;
+	}
+
+	.metric-grid div {
+		min-height: 64px;
+		padding: 10px;
+		border: 1px solid rgba(15, 96, 120, 0.12);
+		border-radius: 6px;
+		background: rgba(246, 252, 253, 0.72);
+	}
+
+	.metric-grid strong {
+		display: block;
+		margin-top: 6px;
+		color: #0d2530;
+		font-size: 0.9rem;
+		line-height: 1.25;
+	}
+
+	.highlight-list {
+		display: grid;
+		gap: 8px;
+		margin: 0;
+		padding: 0;
+		list-style: none;
+		color: #48666f;
+		line-height: 1.62;
+	}
+
+	.highlight-list li {
+		position: relative;
+		padding-left: 16px;
+	}
+
+	.highlight-list li::before {
+		position: absolute;
+		left: 0;
+		top: 0.72em;
+		width: 6px;
+		height: 6px;
+		border-radius: 2px;
+		background: #18a6c8;
+		content: "";
+	}
+
+	.skill-grid {
+		display: grid;
+		grid-template-columns: repeat(4, minmax(0, 1fr));
+		gap: 14px;
+	}
+
+	.skill-card {
+		padding: 20px;
+	}
+
+	.skill-card h3 {
+		margin: 8px 0 16px;
+	}
+
+	.about-card,
+	.contact-panel {
+		display: grid;
+		grid-template-columns: minmax(0, 0.7fr) minmax(320px, 0.65fr);
+		gap: 30px;
+		align-items: center;
+		padding: 30px;
+	}
+
+	.contact-section {
+		padding-bottom: 72px;
+	}
+
+	.contact-panel {
+		background:
+			linear-gradient(135deg, rgba(255, 255, 255, 0.9), rgba(231, 248, 251, 0.86)),
+			radial-gradient(circle at 86% 42%, rgba(89, 169, 106, 0.16), transparent 30%);
+	}
+
+	.contact-actions {
+		justify-content: flex-end;
+		margin-top: 0;
+	}
+
+	@media (max-width: 1080px) {
+		.hero-grid,
+		.section-heading,
+		.about-card,
+		.contact-panel {
 			grid-template-columns: 1fr;
 		}
 
-		.hero {
+		.hero-grid {
 			min-height: auto;
-			padding: 56px 0 24px;
+		}
+
+		.hero-copy {
+			max-width: 860px;
+		}
+
+		.skill-grid {
+			grid-template-columns: repeat(2, minmax(0, 1fr));
+		}
+	}
+
+	@media (max-width: 820px) {
+		.topbar {
+			grid-template-columns: auto minmax(0, 1fr);
+		}
+
+		.top-actions {
+			grid-column: 1 / -1;
+			justify-content: flex-end;
+		}
+
+		.hero {
+			padding-top: 42px;
+		}
+
+		.hero-stage {
+			min-height: 430px;
+		}
+
+		.hero-status,
+		.project-grid,
+		.skill-grid,
+		.metric-grid {
+			grid-template-columns: 1fr;
+		}
+
+		.hero-status {
+			margin-top: 14px;
+		}
+
+		.project-title-row {
+			grid-template-columns: 1fr;
+		}
+	}
+
+	@media (max-width: 560px) {
+		.section-band,
+		.topbar {
+			width: min(100% - 20px, 1440px);
+		}
+
+		.topbar {
+			gap: 8px;
+			padding: 8px;
+		}
+
+		.brand-mark {
+			width: 42px;
+		}
+
+		.quick-jump {
+			justify-content: flex-start;
+		}
+
+		.quick-jump a {
+			padding: 0 10px;
+		}
+
+		h1 {
+			font-size: clamp(3.25rem, 17vw, 5.5rem);
+		}
+
+		.hero-stage {
+			min-height: 390px;
+		}
+
+		.slide-copy {
+			left: 14px;
+			bottom: 58px;
+			width: calc(100% - 28px);
+			padding: 16px;
+		}
+
+		.project-media,
+		.visual-placeholder {
+			min-height: 220px;
+		}
+
+		.about-card,
+		.contact-panel,
+		.project-content {
+			padding: 20px;
+		}
+
+		.contact-actions {
+			justify-content: flex-start;
 		}
 	}
 </style>
